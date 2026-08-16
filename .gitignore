@@ -1,0 +1,22 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Build artifacts do PyInstaller
+build/
+dist/
+*.spec.bak
+
+# Bytecode Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor / SO
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Arquivos temporários de teste
+scratch_*
