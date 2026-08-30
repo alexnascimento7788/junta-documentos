@@ -1,4 +1,4 @@
-# Gera o executável Windows (.exe) do Junta Documentos.
+# Gera o executável Windows (.exe) do DocJoin.
 # Execute a partir da raiz do projeto: .\build_scripts\build_windows.ps1
 
 $ErrorActionPreference = "Stop"
@@ -14,4 +14,4 @@ pip install -r requirements.txt
 Write-Host "Empacotando com PyInstaller..." -ForegroundColor Cyan
 pyinstaller build_scripts\junta_documentos.spec --distpath dist\windows --workpath build\windows --clean --noconfirm
 
-Write-Host "Concluído! Executável em dist\windows\JuntaDocumentos\JuntaDocumentos.exe" -ForegroundColor Green
+Write-Host "Concluído! Executável em dist\windows\DocJoin.exe" -ForegroundColor Green

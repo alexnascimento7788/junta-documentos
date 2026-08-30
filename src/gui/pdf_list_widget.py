@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPixmap
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QPainter, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHBoxLayout,
@@ -18,16 +18,21 @@ from PySide6.QtWidgets import (
 )
 
 from src.core.pdf_merger import PdfInfo
+from src.gui.styles import AVATAR_PALETTE, COLOR_TEXT, COLOR_TEXT_MUTED
 
-_ACCENT_PALETTE = [
-    "#7c5cff", "#3ddc97", "#ff9f5b", "#5bc0ff",
-    "#ff6b81", "#c792ea", "#ffd166", "#4dd0e1",
-]
+# Larguras reservadas para os elementos fixos da linha (número + avatar + espaçamentos +
+# indicador de arraste), usadas para calcular quanto espaço sobra para o nome do arquivo
+# e truncá-lo (…) antes que ele encoste na borda da lista.
+_ORDER_WIDTH = 28
+_AVATAR_WIDTH = 40
+_DRAG_HINT_WIDTH = 20
+_LAYOUT_SPACING = 14
+_SIDE_MARGIN = 16
 
 
 def _circle_pixmap(text: str, seed: int, diameter: int = 40) -> QPixmap:
     """Gera um ícone circular colorido com as iniciais do nome do arquivo."""
-    color = QColor(_ACCENT_PALETTE[seed % len(_ACCENT_PALETTE)])
+    color = QColor(AVATAR_PALETTE[seed % len(AVATAR_PALETTE)])
     pixmap = QPixmap(diameter, diameter)
     pixmap.fill(Qt.transparent)
 
@@ -52,40 +57,60 @@ class PdfListItemWidget(QWidget):
     def __init__(self, pdf_info: PdfInfo, order: int, seed: int, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.pdf_path = pdf_info.path
+        self._full_name = pdf_info.name
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(12)
+        layout.setContentsMargins(_SIDE_MARGIN, 8, _SIDE_MARGIN, 8)
+        layout.setSpacing(_LAYOUT_SPACING)
 
         self.order_label = QLabel(f"{order:02d}")
-        self.order_label.setFixedWidth(28)
-        self.order_label.setStyleSheet("color: #9a9cb5; font-weight: 600; font-size: 13px;")
+        self.order_label.setFixedWidth(_ORDER_WIDTH)
+        self.order_label.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-weight: 600; font-size: 13px;")
         layout.addWidget(self.order_label)
 
         avatar = QLabel()
         avatar.setPixmap(_circle_pixmap(pdf_info.name, seed))
-        avatar.setFixedSize(40, 40)
+        avatar.setFixedSize(_AVATAR_WIDTH, _AVATAR_WIDTH)
         layout.addWidget(avatar)
 
         text_layout = QVBoxLayout()
         text_layout.setSpacing(2)
-        name_label = QLabel(pdf_info.name)
-        name_label.setStyleSheet("font-weight: 600; font-size: 13px;")
-        name_label.setToolTip(str(pdf_info.path))
+        self.name_label = QLabel(pdf_info.name)
+        self.name_label.setStyleSheet(f"font-weight: 600; font-size: 13px; color: {COLOR_TEXT};")
+        self.name_label.setToolTip(str(pdf_info.path))
         pages_label = QLabel(f"{pdf_info.page_count} página(s)")
-        pages_label.setStyleSheet("color: #9a9cb5; font-size: 11px;")
-        text_layout.addWidget(name_label)
+        pages_label.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 11px;")
+        text_layout.addWidget(self.name_label)
         text_layout.addWidget(pages_label)
         layout.addLayout(text_layout, stretch=1)
 
         drag_hint = QLabel("⠿")
-        drag_hint.setStyleSheet("color: #5a5d78; font-size: 16px;")
+        drag_hint.setFixedWidth(_DRAG_HINT_WIDTH)
+        drag_hint.setAlignment(Qt.AlignCenter)
+        drag_hint.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 16px;")
         layout.addWidget(drag_hint)
 
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
     def set_order(self, order: int) -> None:
         self.order_label.setText(f"{order:02d}")
+
+    def resizeEvent(self, event) -> None:  # noqa: N802 - nome definido pela API do Qt
+        super().resizeEvent(event)
+        self._update_elided_name()
+
+    def _update_elided_name(self) -> None:
+        fixed_width = (
+            2 * _SIDE_MARGIN
+            + _ORDER_WIDTH
+            + _AVATAR_WIDTH
+            + _DRAG_HINT_WIDTH
+            + 3 * _LAYOUT_SPACING
+        )
+        available = max(0, self.width() - fixed_width)
+        metrics = QFontMetrics(self.name_label.font())
+        elided = metrics.elidedText(self._full_name, Qt.ElideMiddle, available)
+        self.name_label.setText(elided)
 
 
 class PdfListWidget(QListWidget):

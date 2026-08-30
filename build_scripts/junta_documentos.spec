@@ -43,7 +43,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name="JuntaDocumentos",
+    name="DocJoin",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -62,11 +62,11 @@ exe = EXE(
 if sys.platform == "darwin":
     app = BUNDLE(
         exe,
-        name="JuntaDocumentos.app",
+        name="DocJoin.app",
         icon=icon_file,
-        bundle_identifier="com.juntadocumentos.app",
+        bundle_identifier="br.com.ceasaminas.docjoin",
         info_plist={
             "NSHighResolutionCapable": "True",
-            "CFBundleShortVersionString": "1.0.0",
+            "CFBundleShortVersionString": "2.0.0",
         },
     )

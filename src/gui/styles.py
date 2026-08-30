@@ -1,16 +1,29 @@
-"""Folha de estilos (QSS) para o tema dark moderno do aplicativo."""
+"""Paleta de cores e folha de estilos (QSS) — identidade visual CEASAMINAS."""
 
-COLOR_BG = "#1e1f29"
-COLOR_PANEL = "#262837"
-COLOR_PANEL_ALT = "#2d3044"
-COLOR_ACCENT = "#7c5cff"
-COLOR_ACCENT_HOVER = "#9075ff"
-COLOR_ACCENT_PRESSED = "#6647e6"
-COLOR_TEXT = "#e8e8f0"
-COLOR_TEXT_MUTED = "#9a9cb5"
-COLOR_BORDER = "#3a3d54"
-COLOR_SUCCESS = "#3ddc97"
-COLOR_DANGER = "#ff6b81"
+# Paleta extraída da marca CEASAMINAS (losango verde/dourado + tipografia preta/verde).
+COLOR_GREEN = "#1C7C3E"          # verde principal da marca
+COLOR_GREEN_DARK = "#0F5C2E"     # verde escuro (hover/pressed, texto "MINAS")
+COLOR_GREEN_LIGHT = "#E6F4EA"    # verde clarinho (fundo de seleção/hover)
+COLOR_GOLD = "#F5A623"           # dourado da marca (seta direita do losango)
+COLOR_GOLD_DARK = "#C98A00"      # dourado escuro (hover sobre dourado)
+
+COLOR_BG = "#F5F6F5"
+COLOR_PANEL = "#FFFFFF"
+COLOR_PANEL_ALT = "#F0F2F0"
+COLOR_BORDER = "#E1E4E1"
+COLOR_TEXT = "#1A1A1A"
+COLOR_TEXT_MUTED = "#6B7280"
+
+COLOR_SUCCESS = COLOR_GREEN
+COLOR_WARNING = COLOR_GOLD
+COLOR_DANGER = "#D64545"
+
+# Cores de identificação usadas nos avatares circulares da lista de PDFs —
+# variações dentro da mesma família verde/dourada da marca, para manter a coesão visual.
+AVATAR_PALETTE = [
+    COLOR_GREEN, COLOR_GOLD, COLOR_GREEN_DARK, "#2F9E63",
+    "#C9A227", "#4C7A3E", "#B76E00", "#3D8361",
+]
 
 STYLE_SHEET = f"""
 QWidget {{
@@ -22,7 +35,7 @@ QWidget {{
 
 #TopBar {{
     background-color: {COLOR_PANEL};
-    border-bottom: 1px solid {COLOR_BORDER};
+    border-bottom: 2px solid {COLOR_GREEN};
 }}
 
 #TitleLabel {{
@@ -34,6 +47,16 @@ QWidget {{
 #SubtitleLabel {{
     color: {COLOR_TEXT_MUTED};
     font-size: 12px;
+}}
+
+#FooterBar {{
+    background-color: {COLOR_PANEL};
+    border-top: 1px solid {COLOR_BORDER};
+}}
+
+#FooterLabel {{
+    color: {COLOR_TEXT_MUTED};
+    font-size: 11px;
 }}
 
 #LeftPanel {{
@@ -63,7 +86,7 @@ QLabel#PathLabel {{
 }}
 
 QPushButton {{
-    background-color: {COLOR_PANEL_ALT};
+    background-color: {COLOR_PANEL};
     color: {COLOR_TEXT};
     border: 1px solid {COLOR_BORDER};
     border-radius: 8px;
@@ -72,38 +95,38 @@ QPushButton {{
 }}
 
 QPushButton:hover {{
-    background-color: #363a52;
-    border-color: {COLOR_ACCENT};
+    background-color: {COLOR_GREEN_LIGHT};
+    border-color: {COLOR_GREEN};
 }}
 
 QPushButton:pressed {{
-    background-color: #2a2c40;
+    background-color: #d9ecdf;
 }}
 
 QPushButton:disabled {{
     color: {COLOR_TEXT_MUTED};
-    background-color: {COLOR_PANEL};
+    background-color: {COLOR_PANEL_ALT};
     border-color: {COLOR_BORDER};
 }}
 
 QPushButton#PrimaryButton {{
-    background-color: {COLOR_ACCENT};
+    background-color: {COLOR_GREEN};
     color: white;
     border: none;
     font-weight: 600;
 }}
 
 QPushButton#PrimaryButton:hover {{
-    background-color: {COLOR_ACCENT_HOVER};
+    background-color: {COLOR_GREEN_DARK};
 }}
 
 QPushButton#PrimaryButton:pressed {{
-    background-color: {COLOR_ACCENT_PRESSED};
+    background-color: #0a441f;
 }}
 
 QPushButton#PrimaryButton:disabled {{
-    background-color: #3a3d54;
-    color: {COLOR_TEXT_MUTED};
+    background-color: #b7c9bd;
+    color: #eef3ef;
 }}
 
 QPushButton#IconButton {{
@@ -113,6 +136,19 @@ QPushButton#IconButton {{
     min-height: 28px;
     max-height: 28px;
     border-radius: 14px;
+}}
+
+QLineEdit {{
+    background-color: {COLOR_PANEL};
+    border: 1px solid {COLOR_BORDER};
+    border-radius: 8px;
+    padding: 8px 10px;
+    selection-background-color: {COLOR_GREEN_LIGHT};
+    selection-color: {COLOR_TEXT};
+}}
+
+QLineEdit:focus {{
+    border-color: {COLOR_GREEN};
 }}
 
 QListWidget {{
@@ -131,26 +167,12 @@ QListWidget::item {{
 }}
 
 QListWidget::item:selected {{
-    background-color: #3a3660;
-    border: 1px solid {COLOR_ACCENT};
+    background-color: {COLOR_GREEN_LIGHT};
+    border: 1px solid {COLOR_GREEN};
 }}
 
 QListWidget::item:hover {{
-    background-color: #33364a;
-}}
-
-QProgressBar {{
-    background-color: {COLOR_PANEL_ALT};
-    border: 1px solid {COLOR_BORDER};
-    border-radius: 8px;
-    text-align: center;
-    color: {COLOR_TEXT};
-    height: 18px;
-}}
-
-QProgressBar::chunk {{
-    background-color: {COLOR_ACCENT};
-    border-radius: 7px;
+    background-color: #e8ebe8;
 }}
 
 QScrollBar:vertical {{
@@ -166,7 +188,7 @@ QScrollBar::handle:vertical {{
 }}
 
 QScrollBar::handle:vertical:hover {{
-    background: {COLOR_ACCENT};
+    background: {COLOR_GREEN};
 }}
 
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{

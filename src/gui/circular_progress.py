@@ -6,11 +6,13 @@ from PySide6.QtCore import QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPen
 from PySide6.QtWidgets import QWidget
 
-COLOR_TRACK = QColor("#3a3d54")
-COLOR_RED = QColor("#ff6b81")
-COLOR_YELLOW = QColor("#ffd166")
-COLOR_GREEN = QColor("#3ddc97")
-COLOR_TEXT = QColor("#e8e8f0")
+from src.gui.styles import COLOR_BORDER, COLOR_DANGER, COLOR_GOLD, COLOR_GREEN as BRAND_GREEN, COLOR_TEXT as BRAND_TEXT
+
+COLOR_TRACK = QColor(COLOR_BORDER)
+COLOR_RED = QColor(COLOR_DANGER)
+COLOR_YELLOW = QColor(COLOR_GOLD)
+COLOR_GREEN = QColor(BRAND_GREEN)
+COLOR_TEXT = QColor(BRAND_TEXT)
 
 THRESHOLD_YELLOW = 70
 THRESHOLD_GREEN = 95

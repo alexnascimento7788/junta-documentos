@@ -1,4 +1,4 @@
-"""Janela principal do Junta Documentos."""
+"""Janela principal do DocJoin."""
 
 from __future__ import annotations
 
@@ -20,12 +20,15 @@ from PySide6.QtWidgets import (
 )
 
 from src.core.pdf_merger import PdfMergeError, list_pdfs_in_directory, merge_pdfs, read_pdf_info
+from src.gui.brand_logo import ceasaminas_mark_pixmap
 from src.gui.circular_progress import CircularProgressWidget
 from src.gui.pdf_list_widget import PdfListWidget
-from src.gui.styles import STYLE_SHEET
+from src.gui.styles import COLOR_TEXT_MUTED, STYLE_SHEET
 from src.utils.file_utils import sanitize_output_filename, unique_path
 
-APP_TITLE = "Junta Documentos"
+APP_TITLE = "DocJoin"
+APP_VERSION = "2.0"
+ORG_NAME = "CEASAMINAS"
 
 # Duração "de faz de conta" da animação de progresso: quanto mais arquivos, mais longa,
 # para transmitir a sensação de trabalho proporcional ao tamanho da tarefa.
@@ -99,21 +102,46 @@ class MainWindow(QMainWindow):
         body_layout.addWidget(self._build_right_panel(), stretch=1)
         root_layout.addWidget(body, stretch=1)
 
+        root_layout.addWidget(self._build_footer_bar())
+
     def _build_top_bar(self) -> QWidget:
         bar = QFrame()
         bar.setObjectName("TopBar")
         bar.setFixedHeight(64)
-        layout = QVBoxLayout(bar)
+        layout = QHBoxLayout(bar)
         layout.setContentsMargins(24, 8, 24, 8)
-        layout.setSpacing(0)
+        layout.setSpacing(12)
 
+        logo_label = QLabel()
+        logo_label.setPixmap(ceasaminas_mark_pixmap(40))
+        logo_label.setFixedSize(40, 40)
+        layout.addWidget(logo_label)
+
+        title_block = QVBoxLayout()
+        title_block.setSpacing(0)
         title = QLabel(APP_TITLE)
         title.setObjectName("TitleLabel")
         subtitle = QLabel("Una múltiplos PDFs em um único arquivo, na ordem que você escolher")
         subtitle.setObjectName("SubtitleLabel")
+        title_block.addWidget(title)
+        title_block.addWidget(subtitle)
+        layout.addLayout(title_block)
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        layout.addStretch(1)
+        return bar
+
+    def _build_footer_bar(self) -> QWidget:
+        bar = QFrame()
+        bar.setObjectName("FooterBar")
+        bar.setFixedHeight(32)
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(24, 0, 24, 0)
+
+        footer_label = QLabel(f"{ORG_NAME} 2026 · {APP_TITLE} v{APP_VERSION}")
+        footer_label.setObjectName("FooterLabel")
+        layout.addStretch(1)
+        layout.addWidget(footer_label)
+        layout.addStretch(1)
         return bar
 
     def _build_left_panel(self) -> QWidget:
@@ -175,7 +203,7 @@ class MainWindow(QMainWindow):
 
         self.progress_status_label = QLabel("")
         self.progress_status_label.setAlignment(Qt.AlignCenter)
-        self.progress_status_label.setStyleSheet("color: #9a9cb5; font-size: 11px;")
+        self.progress_status_label.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 11px;")
         self.progress_status_label.setVisible(False)
         layout.addWidget(self.progress_status_label)
 
