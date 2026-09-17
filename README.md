@@ -19,6 +19,7 @@ Desenvolvido para o **CEASAMINAS** (Centrais de Abastecimento de Minas Gerais) �
 
 - Seleção de um PDF de origem e navegação página a página (testado com documentos de até 50 páginas).
 - **Anonimização real**: arraste sobre uma área da página para marcá-la para redação — ao salvar, o conteúdo original sob essa área é **removido de verdade** do PDF (não apenas coberto visualmente com um retângulo preto por cima, o que deixaria o texto original ainda extraível).
+- **Cor da tarja/texto configurável**: 5 cores rápidas (preto, branco, cinza, vermelho, verde CEASAMINAS) ou uma cor personalizada via seletor — cada ferramenta (anonimizar/texto) lembra sua própria cor.
 - **Inserção de texto**: clique num ponto da página e digite o texto a inserir.
 - Botão para desfazer a última marcação feita na página atual.
 - Seleção de pasta e nome do arquivo de saída (documento original nunca é sobrescrito).

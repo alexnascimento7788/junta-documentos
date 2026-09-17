@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
+    QColorDialog,
     QComboBox,
     QFileDialog,
     QFrame,
@@ -23,7 +25,7 @@ from PySide6.QtWidgets import (
 from src.core.pdf_editor import PdfEditError, PdfEditSession
 from src.gui.circular_progress import CircularProgressWidget
 from src.gui.pdf_edit_canvas import PdfEditCanvas
-from src.gui.styles import COLOR_TEXT_MUTED
+from src.gui.styles import COLOR_BORDER, COLOR_GREEN, COLOR_TEXT_MUTED
 from src.utils.file_utils import sanitize_output_filename, unique_path
 
 APP_TITLE = "DocJoin"
@@ -32,6 +34,12 @@ APP_TITLE = "DocJoin"
 # mantendo a proporção — suficiente para marcar áreas com precisão sem consumir memória
 # excessiva mesmo em documentos de 50+ páginas (apenas 1 página fica em memória por vez).
 RENDER_TARGET_WIDTH_PX = 900
+
+# Cores rápidas para a tarja de anonimização / texto inserido. Preto e branco cobrem os
+# casos mais comuns (branco "some" com o fundo da página); as demais são só atalhos.
+_PRESET_COLORS = ["#000000", "#FFFFFF", "#808080", "#D64545", "#1C7C3E"]
+_DEFAULT_REDACT_COLOR = "#000000"
+_DEFAULT_TEXT_COLOR = "#000000"
 
 
 class SaveEditsWorker(QThread):
@@ -69,8 +77,11 @@ class PdfEditTab(QWidget):
         self._output_dir: Path | None = None
         self._current_page = 0
         self._save_worker: SaveEditsWorker | None = None
+        self._redact_color_hex = _DEFAULT_REDACT_COLOR
+        self._text_color_hex = _DEFAULT_TEXT_COLOR
 
         self._build_ui()
+        self._refresh_color_selection()
 
     # ------------------------------------------------------------------ UI
 
@@ -133,6 +144,31 @@ class PdfEditTab(QWidget):
         hint.setWordWrap(True)
         hint.setStyleSheet(f"color: {COLOR_TEXT_MUTED}; font-size: 11px;")
         v.addWidget(hint)
+
+        v.addSpacing(6)
+        self.color_section_label = self._section_label("Cor da tarja")
+        v.addWidget(self.color_section_label)
+
+        color_row = QHBoxLayout()
+        color_row.setSpacing(6)
+        self._swatch_buttons: dict[str, QPushButton] = {}
+        for color_hex in _PRESET_COLORS:
+            swatch = QPushButton()
+            swatch.setFixedSize(26, 26)
+            swatch.setCursor(Qt.PointingHandCursor)
+            swatch.setToolTip(color_hex)
+            swatch.clicked.connect(lambda _checked=False, c=color_hex: self._on_preset_color_clicked(c))
+            color_row.addWidget(swatch)
+            self._swatch_buttons[color_hex] = swatch
+
+        self.custom_color_button = QPushButton("+")
+        self.custom_color_button.setFixedSize(26, 26)
+        self.custom_color_button.setCursor(Qt.PointingHandCursor)
+        self.custom_color_button.setToolTip("Cor personalizada...")
+        self.custom_color_button.clicked.connect(self._on_pick_custom_color)
+        color_row.addWidget(self.custom_color_button)
+        color_row.addStretch(1)
+        v.addLayout(color_row)
 
         self.btn_undo = QPushButton("↩  Desfazer última marcação")
         self.btn_undo.setEnabled(False)
@@ -244,10 +280,47 @@ class PdfEditTab(QWidget):
 
     def _on_tool_changed(self) -> None:
         self.canvas.set_tool(self.tool_combo.currentData())
+        self._refresh_color_selection()
+
+    def _current_color(self) -> str:
+        return self._redact_color_hex if self.tool_combo.currentData() == "redact" else self._text_color_hex
+
+    def _on_preset_color_clicked(self, color_hex: str) -> None:
+        self._set_current_color(color_hex)
+
+    def _on_pick_custom_color(self) -> None:
+        initial = QColor(self._current_color())
+        color = QColorDialog.getColor(initial, self, "Escolher cor")
+        if color.isValid():
+            self._set_current_color(color.name())
+
+    def _set_current_color(self, color_hex: str) -> None:
+        if self.tool_combo.currentData() == "redact":
+            self._redact_color_hex = color_hex
+        else:
+            self._text_color_hex = color_hex
+        self._refresh_color_selection()
+
+    def _refresh_color_selection(self) -> None:
+        current = self._current_color()
+        for color_hex, swatch in self._swatch_buttons.items():
+            selected = color_hex.lower() == current.lower()
+            border = f"2px solid {COLOR_GREEN}" if selected else f"1px solid {COLOR_BORDER}"
+            swatch.setStyleSheet(f"background-color: {color_hex}; border: {border}; border-radius: 6px;")
+
+        is_preset = current.lower() in (c.lower() for c in _PRESET_COLORS)
+        custom_border = f"1px solid {COLOR_BORDER}" if is_preset else f"2px solid {COLOR_GREEN}"
+        custom_bg = "transparent" if is_preset else current
+        self.custom_color_button.setStyleSheet(
+            f"background-color: {custom_bg}; border: {custom_border}; border-radius: 6px; font-weight: 700;"
+        )
+
+        is_redact = self.tool_combo.currentData() == "redact"
+        self.color_section_label.setText("Cor da tarja" if is_redact else "Cor do texto")
 
     def _on_redaction_requested(self, rect: tuple) -> None:
         try:
-            self._session.add_redaction(self._current_page, rect)
+            self._session.add_redaction(self._current_page, rect, color_hex=self._redact_color_hex)
         except PdfEditError as exc:
             QMessageBox.warning(self, APP_TITLE, str(exc))
             return
@@ -260,7 +333,7 @@ class PdfEditTab(QWidget):
         if not ok or not text.strip():
             return
         try:
-            self._session.add_text(self._current_page, position, text.strip())
+            self._session.add_text(self._current_page, position, text.strip(), color_hex=self._text_color_hex)
         except PdfEditError as exc:
             QMessageBox.warning(self, APP_TITLE, str(exc))
             return

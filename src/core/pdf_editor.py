@@ -95,11 +95,21 @@ class PdfEditSession:
 
     # ------------------------------------------------------------------ edição
 
-    def add_redaction(self, page_index: int, rect_pt: tuple[float, float, float, float]) -> None:
-        """Marca uma área para anonimização (remoção real do conteúdo ao salvar)."""
+    def add_redaction(
+        self,
+        page_index: int,
+        rect_pt: tuple[float, float, float, float],
+        color_hex: str = "#000000",
+    ) -> None:
+        """Marca uma área para anonimização (remoção real do conteúdo ao salvar).
+
+        `color_hex` é a cor da tarja que substitui a área removida (preto, branco,
+        cinza, etc.) — não afeta a remoção do conteúdo original em si, só a aparência.
+        """
         doc = self._require_doc()
         page = doc[page_index]
-        annot = page.add_redact_annot(pymupdf.Rect(*rect_pt), fill=(0, 0, 0))
+        fill = _hex_to_rgb01(color_hex)
+        annot = page.add_redact_annot(pymupdf.Rect(*rect_pt), fill=fill)
         self._marks.append(_Mark("redact", page_index, annot))
 
     def add_text(
