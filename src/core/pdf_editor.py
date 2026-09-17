@@ -31,6 +31,11 @@ class _Mark:
     kind: MarkKind
     page_index: int
     annot: "pymupdf.Annot"
+    # Preenchidos apenas para marcas "redact" — usados pela GUI para desenhar sua própria
+    # pré-visualização colorida, já que o MuPDF sempre renderiza uma marcação de redação
+    # pendente (ainda não aplicada) com um "X" vermelho padrão, ignorando a cor escolhida.
+    rect_pt: Optional[tuple[float, float, float, float]] = None
+    color_hex: Optional[str] = None
 
 
 class PdfEditSession:
@@ -110,7 +115,19 @@ class PdfEditSession:
         page = doc[page_index]
         fill = _hex_to_rgb01(color_hex)
         annot = page.add_redact_annot(pymupdf.Rect(*rect_pt), fill=fill)
-        self._marks.append(_Mark("redact", page_index, annot))
+        self._marks.append(_Mark("redact", page_index, annot, rect_pt=rect_pt, color_hex=color_hex))
+
+    def pending_redactions_on_page(self, page_index: int) -> list[tuple[tuple[float, float, float, float], str]]:
+        """Retângulos e cores das redações marcadas mas ainda não salvas/aplicadas nesta página.
+
+        Usado pela GUI para desenhar sua própria pré-visualização colorida por cima da
+        página renderizada (ver comentário em `_Mark`).
+        """
+        return [
+            (mark.rect_pt, mark.color_hex)
+            for mark in self._marks
+            if mark.kind == "redact" and mark.page_index == page_index
+        ]
 
     def add_text(
         self,

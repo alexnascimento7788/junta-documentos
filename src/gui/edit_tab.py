@@ -81,6 +81,7 @@ class PdfEditTab(QWidget):
         self._text_color_hex = _DEFAULT_TEXT_COLOR
 
         self._build_ui()
+        self.canvas.set_redact_color(self._redact_color_hex)
         self._refresh_color_selection()
 
     # ------------------------------------------------------------------ UI
@@ -257,6 +258,9 @@ class PdfEditTab(QWidget):
         zoom = RENDER_TARGET_WIDTH_PX / page_width_pt if page_width_pt else 1.0
         width_px, height_px, rgb_bytes = self._session.render_page(self._current_page, zoom=zoom)
         self.canvas.set_page(width_px, height_px, rgb_bytes, zoom)
+        # O MuPDF sempre renderiza uma redação pendente com um "X" vermelho fixo, então
+        # desenhamos nós mesmos a pré-visualização com a cor real escolhida, por cima.
+        self.canvas.set_pending_redactions(self._session.pending_redactions_on_page(self._current_page))
 
     def _update_nav_state(self, total: int | None = None) -> None:
         total = total if total is not None else self._session.page_count
@@ -297,6 +301,7 @@ class PdfEditTab(QWidget):
     def _set_current_color(self, color_hex: str) -> None:
         if self.tool_combo.currentData() == "redact":
             self._redact_color_hex = color_hex
+            self.canvas.set_redact_color(color_hex)
         else:
             self._text_color_hex = color_hex
         self._refresh_color_selection()
