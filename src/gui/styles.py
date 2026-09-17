@@ -151,6 +151,57 @@ QLineEdit:focus {{
     border-color: {COLOR_GREEN};
 }}
 
+QComboBox {{
+    background-color: {COLOR_PANEL};
+    border: 1px solid {COLOR_BORDER};
+    border-radius: 8px;
+    padding: 8px 10px;
+}}
+
+QComboBox:hover {{
+    border-color: {COLOR_GREEN};
+}}
+
+QComboBox::drop-down {{
+    border: none;
+    width: 24px;
+}}
+
+QComboBox QAbstractItemView {{
+    background-color: {COLOR_PANEL};
+    border: 1px solid {COLOR_BORDER};
+    selection-background-color: {COLOR_GREEN_LIGHT};
+    selection-color: {COLOR_TEXT};
+    outline: none;
+}}
+
+QTabWidget::pane {{
+    border: none;
+    background-color: {COLOR_BG};
+}}
+
+QTabBar::tab {{
+    background-color: {COLOR_PANEL_ALT};
+    color: {COLOR_TEXT_MUTED};
+    padding: 10px 22px;
+    border: 1px solid {COLOR_BORDER};
+    border-bottom: none;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    margin-right: 2px;
+    font-weight: 600;
+}}
+
+QTabBar::tab:selected {{
+    background-color: {COLOR_BG};
+    color: {COLOR_GREEN};
+    border-bottom: 2px solid {COLOR_GREEN};
+}}
+
+QTabBar::tab:hover {{
+    color: {COLOR_GREEN};
+}}
+
 QListWidget {{
     background-color: {COLOR_PANEL};
     border: 1px solid {COLOR_BORDER};

@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -22,6 +23,7 @@ from PySide6.QtWidgets import (
 from src.core.pdf_merger import PdfMergeError, list_pdfs_in_directory, merge_pdfs, read_pdf_info
 from src.gui.brand_logo import ceasaminas_mark_pixmap
 from src.gui.circular_progress import CircularProgressWidget
+from src.gui.edit_tab import PdfEditTab
 from src.gui.pdf_list_widget import PdfListWidget
 from src.gui.styles import COLOR_TEXT_MUTED, STYLE_SHEET
 from src.utils.file_utils import sanitize_output_filename, unique_path
@@ -94,15 +96,21 @@ class MainWindow(QMainWindow):
 
         root_layout.addWidget(self._build_top_bar())
 
+        tabs = QTabWidget()
+        tabs.addTab(self._build_merge_tab(), "Unir PDFs")
+        tabs.addTab(PdfEditTab(), "Editar PDF")
+        root_layout.addWidget(tabs, stretch=1)
+
+        root_layout.addWidget(self._build_footer_bar())
+
+    def _build_merge_tab(self) -> QWidget:
         body = QWidget()
         body_layout = QHBoxLayout(body)
         body_layout.setContentsMargins(0, 0, 0, 0)
         body_layout.setSpacing(0)
         body_layout.addWidget(self._build_left_panel(), stretch=0)
         body_layout.addWidget(self._build_right_panel(), stretch=1)
-        root_layout.addWidget(body, stretch=1)
-
-        root_layout.addWidget(self._build_footer_bar())
+        return body
 
     def _build_top_bar(self) -> QWidget:
         bar = QFrame()
@@ -121,7 +129,7 @@ class MainWindow(QMainWindow):
         title_block.setSpacing(0)
         title = QLabel(APP_TITLE)
         title.setObjectName("TitleLabel")
-        subtitle = QLabel("Una múltiplos PDFs em um único arquivo, na ordem que você escolher")
+        subtitle = QLabel("Una, anonimize e edite documentos PDF")
         subtitle.setObjectName("SubtitleLabel")
         title_block.addWidget(title)
         title_block.addWidget(subtitle)
